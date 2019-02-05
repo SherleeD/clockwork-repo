@@ -1,0 +1,99 @@
+﻿@model IPagedList<Clockwork.Web.ViewModel.TimeInquiryVM>
+
+@using PagedList.Mvc;
+@using PagedList;
+
+<link href="~/Content/bootstrap.css" rel="stylesheet" />
+
+<h2>AWH Clockwork Project @ViewData["Version"] on @ViewData["Runtime"]!</h2>
+<br />
+
+@using (Html.BeginForm("Index", "Home", FormMethod.Post))
+{
+    <div class="row">
+        <div class="col-lg-12">
+
+            @Html.DropDownList("timezone", ViewBag.TimeZones as List<SelectListItem>, "Select Time Zone", new { @class = "form-control", @style = "width:300px" })
+
+            <br />
+            <button id="btnGetTimeZoneTime" type="submit" class="btn btn-primary">Get the time</button>
+
+            <br />
+            @if (@ViewBag.TimezoneSelected != null && ViewBag.TimezoneSelected != "")
+            {
+                <h5>UTC Date Time : @ViewBag.UtcDateTime</h5>
+                <h5>Server Date Time : @ViewBag.UserDateTime</h5>
+            }
+
+        </div>
+    </div>
+
+    <hr />
+
+    @*
+        <button id="btnGetTime" type="submit" onclick="UserAction()" class="btn btn-primary">Get the time</button>
+        <p id="output"></p>
+    *@
+
+    <div class="row">
+        <div class="col-lg-12">
+
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Query ID</th>
+                        <th>Server Time</th>
+                        <th>Client IP</th>
+                        <th>UTC Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        if (Model.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="5">
+                                    No record found.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr>
+                                <td>@item.CurrentTimeQueryId</td>
+                                <td>@item.Time</td>
+                                <td>@item.ClientIp </td>
+                                <td>@item.UTCTime</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+
+            @Html.PagedListPager(Model, page => Url.Action("Index", new { page }),
+            new PagedListRenderOptions
+            {
+                LiElementClasses = new List<string> { "page-item" },
+                UlElementClasses = new List<string> { "pagination" }
+            })  Showing @Model.FirstItemOnPage  to @Model.LastItemOnPage  of @Model.TotalItemCount records
+
+        </div>
+    </div>
+}
+
+<script type="text/javascript">
+    function UserAction() {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("output").innerHTML = this.responseText;
+            }
+        };
+        //xhttp.open("GET", "http://127.0.0.1:5000/api/currenttime", true);
+        xhttp.open("GET", "http://localhost:51946/api/currenttime/1", true);
+        xhttp.setRequestHeader("Content-type", "application/json");
+        xhttp.send();
+    }
+</script>
+
